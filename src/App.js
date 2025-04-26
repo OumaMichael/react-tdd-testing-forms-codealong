@@ -1,110 +1,63 @@
-import React from "react";
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import '@testing-library/jest-dom';
-import App from "./App";
+import { useState } from "react";
 
-// Pepperoni checkbox tests
-test("pepperoni checkbox is initially unchecked", () => {
-  render(<App />);
-  
-  const checkbox = screen.getByRole("checkbox", { name: /add pepperoni/i });
-  
-  expect(checkbox).not.toBeChecked();
-});
+function App() {
+  const [pepperoniIsChecked, setPepperoniIsChecked] = useState(false);
+  const [size, setSize] = useState("small");
+  const [contactInfo, setContactInfo] = useState("");
+  const [orderIsSubmitted, setOrderIsSubmitted] = useState(false);
 
-test("clicking the checkbox toggles pepperoni", () => {
-  render(<App />);
-  
-  const checkbox = screen.getByRole("checkbox", { name: /add pepperoni/i });
-  
-  userEvent.click(checkbox);
-  
-  expect(checkbox).toBeChecked();
-  
-  userEvent.click(checkbox);
-  
-  expect(checkbox).not.toBeChecked();
-});
+  const togglePepperoni = (e) => setPepperoniIsChecked(e.target.checked);
 
-// Size select element
-test("size select element initially displays 'Small'", () => {
-  render(<App />);
+  const selectSize = (e) => setSize(e.target.value);
 
-  const selectSize = screen.getByLabelText(/select size/i);
+  const updateContactField = (e) => setContactInfo(e.target.value);
 
-  expect(selectSize).toHaveDisplayValue("Small");
-});
+  const submitOrder = (e) => {
+    e.preventDefault();
+    setOrderIsSubmitted(true);
+  };
 
-test("select Size dropdown displays the user's selected value", () => {
-  render(<App />);
-
-  const selectSize = screen.getByLabelText(/select size/i);
-
-  userEvent.selectOptions(selectSize, "medium");
-
-  expect(selectSize).toHaveDisplayValue("Medium");
-
-  userEvent.selectOptions(selectSize, "large");
-
-  expect(selectSize).toHaveDisplayValue("Large");
-});
-
-// "Your Selection" text
-test("'Your Selection' message initially displays 'small cheese'", () => {
-  render(<App />);
-
-  expect(screen.getByText(/small cheese/i)).toBeInTheDocument();
-});
-
-test("selecting options updates the 'Your selection' message", () => {
-  render(<App />);
-
-  const addPepperoni = screen.getByRole("checkbox", { name: /add pepperoni/i });
-  const selectSize = screen.getByLabelText(/select size/i);
-
-  userEvent.click(addPepperoni);
-
-  expect(screen.getByText(/small pepperoni/i)).toBeInTheDocument();
-
-  userEvent.selectOptions(selectSize, "large");
-
-  expect(screen.getByText(/large pepperoni/i)).toBeInTheDocument();
-});
-
-// "Contact Info" text box
-test("'Contact Info' text box initially displays a placeholder value of 'email address'", () => {
-  render(<App />);
-
-  expect(screen.getByPlaceholderText(/email address/i)).toBeInTheDocument();
-});
-
-test("the page shows information the user types into the contact form field", () => {
-  render(<App />);
-
-  const contact = screen.getByLabelText(/enter your email address/i);
-
-  userEvent.type(contact, "pizzafan@email.com");
-
-  expect(contact).toHaveValue("pizzafan@email.com");
-});
-
-// Submit Order button
-test("form contains a 'Submit Order' button", () => {
-  render(<App />);
-
-  expect(
-    screen.getByRole("button", { name: /submit order/i })
-  ).toBeInTheDocument();
-});
-
-test("clicking the Submit Order button displays a thank you message", () => {
-  render(<App />);
-
-  userEvent.click(screen.getByRole("button", { name: /submit order/i }));
-
-  expect(screen.getByText(/thanks for your order!/i)).toBeInTheDocument();
-});
+  return (
+    <div>
+      <h1>Place an Order</h1>
+      <p>
+        Your selection: {size} {pepperoniIsChecked ? "pepperoni" : "cheese"}
+      </p>
+      <form onSubmit={submitOrder}>
+        <div>
+          <h3>Toppings</h3>
+          <input
+            type="checkbox"
+            id="pepperoni"
+            checked={pepperoniIsChecked}
+            aria-checked={pepperoniIsChecked}
+            onChange={togglePepperoni}
+          />
+          <label htmlFor="pepperoni">Add pepperoni</label>
+        </div>
+        <div>
+          <h3>Size</h3>
+          <label htmlFor="select-size">Select size: </label>
+          <select id="select-size" value={size} onChange={selectSize}>
+            <option value="small">Small</option>
+            <option value="medium">Medium</option>
+            <option value="large">Large</option>
+          </select>
+        </div>
+        <div>
+          <h3>Contact Info</h3>
+          <label htmlFor="email">Enter your email address: </label>
+          <input
+            type="text"
+            value={contactInfo}
+            id="email"
+            placeholder="email address"
+            onChange={updateContactField}
+          />
+        </div>
+        <button type="submit">Submit Order</button>
+      </form>
+      {orderIsSubmitted ? <h2>Thanks for your order!</h2> : null}
     </div>
   );
 }
